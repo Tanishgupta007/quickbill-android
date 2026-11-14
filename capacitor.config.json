@@ -1,0 +1,9 @@
+{
+  "appId": "com.brightways.quickbill",
+  "appName": "QuickBill",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "android": {
+    "allowMixedContent": false
+  }
+}

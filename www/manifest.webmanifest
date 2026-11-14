@@ -1,0 +1,17 @@
+{
+  "name": "QuickBill \u2014 Simple Billing",
+  "short_name": "QuickBill",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f6f8f6",
+  "theme_color": "#15803d",
+  "description": "Simple offline-friendly calculator billing app.",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

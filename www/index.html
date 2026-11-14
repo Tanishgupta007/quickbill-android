@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#15803d">
+<meta name="description" content="Simple, fast, offline-friendly billing calculator.">
+<link rel="manifest" href="manifest.webmanifest">
+<title>QuickBill — Simple Billing</title>
+<style>
+:root{--green:#15803d;--green-dark:#166534;--green-soft:#dcfce7;--ink:#17211b;--muted:#68756d;--line:#e5ebe6;--bg:#f6f8f6;--white:#fff;--red:#dc2626;--shadow:0 8px 30px rgba(20,50,30,.07)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font:inherit}button{cursor:pointer;touch-action:manipulation}
+.app{max-width:540px;margin:0 auto;min-height:100dvh;background:var(--bg);padding-bottom:28px}
+header{height:66px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;background:var(--white);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.6px}.logo{width:34px;height:34px;background:var(--green);border-radius:11px;color:white;display:grid;place-items:center;font-weight:900}
+.header-actions{display:flex;gap:8px}.icon-btn{border:1px solid var(--line);background:white;border-radius:12px;min-width:42px;height:42px;color:var(--ink);font-size:18px}
+main{padding:18px 16px 24px}.screen{display:none}.screen.active{display:block}
+.topline{display:flex;align-items:center;justify-content:space-between;margin:3px 2px 14px}.eyebrow{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.total-card{background:var(--green);color:white;border-radius:22px;padding:19px 20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.total-label{font-size:13px;color:#d9fbe4;font-weight:600}.total-value{font-size:38px;line-height:1.2;font-weight:800;letter-spacing:-1.4px;margin-top:5px;font-variant-numeric:tabular-nums}
+.total-foot{font-size:12px;color:#d9fbe4;margin-top:5px}
+.panel{background:white;border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.panel-head h2{font-size:15px;margin:0}.small-muted{font-size:12px;color:var(--muted)}
+.customer-entry{display:block;margin:0 0 14px}.customer-entry span{display:block;font-size:13px;font-weight:700;margin:0 0 7px}.customer-entry input{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:13px;background:#fff;outline-color:var(--green);font-size:15px}
+.amount-box{border:1.5px solid #dce5dd;border-radius:15px;padding:12px 15px;display:flex;align-items:center;gap:8px;margin-bottom:12px;background:#fbfdfb}
+.currency{font-weight:700;color:var(--muted);font-size:20px}.amount-input{border:0;outline:0;background:transparent;width:100%;font-size:30px;font-weight:800;color:var(--ink);text-align:right;min-width:0;caret-color:transparent;pointer-events:none;user-select:none;-webkit-user-select:none}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.key{height:54px;border:1px solid var(--line);border-radius:14px;background:#fff;font-size:22px;font-weight:650;color:#25332a;box-shadow:0 2px 0 #edf1ed}
+.key:active{background:#f0f7f1;transform:translateY(1px)}.key.utility{color:var(--muted);font-size:17px}.key.clear{color:var(--red)}
+.add-btn,.primary-btn{border:0;background:var(--green);color:#fff;border-radius:15px;font-weight:750;min-height:54px;padding:0 18px;font-size:16px;width:100%;margin-top:12px}
+.add-btn:active,.primary-btn:active{background:var(--green-dark)}.secondary-btn{border:1px solid var(--line);background:white;color:var(--ink);border-radius:14px;min-height:48px;padding:0 14px;font-weight:650}
+.items-panel{padding:0;overflow:hidden}.items-panel .panel-head{padding:16px 16px 8px;margin:0}
+.item-list{padding:0 16px 8px}.empty{padding:20px 8px 24px;text-align:center;color:var(--muted);font-size:14px}
+.item-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid #f0f3f0}
+.item-num{width:34px;height:34px;border-radius:11px;background:#f0f7f1;color:var(--green);display:grid;place-items:center;font-weight:750;font-size:13px;flex:none}
+.item-name{flex:1;font-size:14px;font-weight:650}.item-amount{font-size:15px;font-weight:750;font-variant-numeric:tabular-nums}
+.item-actions{display:flex;gap:4px}.mini{border:0;background:transparent;color:var(--muted);font-size:17px;padding:7px 5px;border-radius:8px}.mini:active{background:#f2f5f2}
+.bill-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}.bill-actions button{margin:0}
+.danger-link{border:0;background:transparent;color:var(--red);font-size:13px;font-weight:650;padding:10px}
+.nav{display:flex;gap:8px;padding:8px 16px 0}.nav button{flex:1;border:1px solid var(--line);border-radius:12px;background:white;padding:11px 8px;color:var(--muted);font-weight:700;font-size:13px}.nav button.active{background:var(--green-soft);border-color:#b8e6c5;color:var(--green-dark)}
+.history-search{width:100%;border:1px solid var(--line);border-radius:13px;padding:13px 14px;margin-bottom:12px;outline-color:var(--green);background:white}
+.history-day{margin:8px 0 18px}.history-day-head{display:flex;justify-content:space-between;align-items:center;padding:10px 3px 8px;font-size:12px;font-weight:800;color:var(--green-dark);letter-spacing:.35px}.history-day-head span:last-child{font-size:11px;color:var(--muted);font-weight:650;letter-spacing:0}.history-card{background:white;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.history-info{flex:1;min-width:0}.history-title{font-weight:750;font-size:14px}.history-meta{font-size:12px;color:var(--muted);margin-top:4px}.history-total{font-weight:800;font-size:16px}
+.settings-field{display:block;margin:12px 0}.settings-field span{display:block;font-size:13px;font-weight:700;margin-bottom:6px}.settings-field input{width:100%;padding:13px;border:1px solid var(--line);border-radius:12px;outline-color:var(--green)}
+.modal{position:fixed;inset:0;background:rgba(12,24,15,.45);z-index:20;display:none;align-items:flex-end;justify-content:center;padding:12px}.modal.show{display:flex}.sheet{background:white;border-radius:22px 22px 16px 16px;width:min(100%,540px);max-height:92dvh;overflow:auto;padding:18px;box-shadow:0 15px 60px #0002}.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.sheet-head h2{font-size:18px;margin:0}.close{border:0;background:#f1f4f1;border-radius:10px;width:36px;height:36px;font-size:20px}
+.receipt{border:1px dashed #cbd5cc;border-radius:12px;padding:18px 15px;background:#fff}.receipt-center{text-align:center}.receipt h2{font-size:21px;margin:0 0 4px}.receipt p{font-size:12px;color:#68756d;margin:3px 0}.receipt-meta{display:flex;justify-content:space-between;font-size:12px;margin:12px 0}.receipt table{width:100%;border-collapse:collapse;font-size:13px}.receipt th,.receipt td{padding:9px 0;border-bottom:1px solid #edf0ed;text-align:left}.receipt th:last-child,.receipt td:last-child{text-align:right}.receipt-total{display:flex;justify-content:space-between;font-weight:850;font-size:20px;margin-top:14px}.receipt-footer{text-align:center;font-size:11px;color:var(--muted);margin-top:18px}
+.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.modal-actions button{margin:0}.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#18251c;color:white;padding:12px 17px;border-radius:12px;font-size:13px;z-index:50;box-shadow:var(--shadow);display:none;max-width:90%;text-align:center}.toast.show{display:block}
+.note{font-size:12px;color:var(--muted);line-height:1.5;margin:10px 2px}.hidden{display:none!important}
+@media(min-width:600px){body{padding:18px 0}.app{border-radius:24px;overflow:hidden;box-shadow:0 10px 50px #17351f12;min-height:calc(100dvh - 36px)}header{position:relative}}
+.upi-block{margin-top:14px;padding-top:10px;border-top:1px dashed #999;text-align:center;color:#111}
+.upi-block .qr-title{font-size:12px;font-weight:800;margin-bottom:5px}
+.upi-block .qr-holder{display:flex;justify-content:center;align-items:center;margin:6px auto;width:126px;height:126px;background:#fff;padding:4px}
+.upi-block .qr-holder canvas,.upi-block .qr-holder img{width:118px!important;height:118px!important;image-rendering:pixelated}
+.upi-block .upi-id{font-size:9px;font-weight:700;overflow-wrap:anywhere;margin-top:4px}
+.upi-block .qr-note{font-size:8px;color:#555;margin-top:3px}
+@page{size:58mm auto;margin:0}
+@media print{
+  html,body{width:58mm!important;min-width:58mm!important;margin:0!important;padding:0!important;background:#fff!important}
+  body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .app,header,main,.modal:not(.show),.toast{display:none!important}
+  .modal.show{display:block!important;position:static!important;background:#fff!important;padding:0!important;margin:0!important;width:58mm!important}
+  .sheet{width:58mm!important;max-width:58mm!important;max-height:none!important;overflow:visible!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;margin:0 auto!important}
+  .sheet-head,.modal-actions,.close,#saveBillBtn{display:none!important}
+  .receipt{width:48mm!important;max-width:48mm!important;border:0!important;border-radius:0!important;padding:1mm 0!important;margin:0!important;background:#fff!important;color:#000!important;font-family:Arial,sans-serif!important;font-size:9px!important;line-height:1.25!important;overflow-wrap:anywhere}
+  .receipt-center h2{font-size:13px!important;font-weight:800!important;margin:0 0 2px!important}
+  .receipt-center p{font-size:8px!important;color:#000!important;margin:1px 0!important}
+  .receipt-meta{font-size:8px!important;gap:3px!important;margin:7px 0!important}
+  .receipt table{width:100%!important;font-size:9px!important;border-collapse:collapse!important;table-layout:fixed!important}
+  .receipt th,.receipt td{padding:4px 0!important;border-bottom:1px dashed #999!important;color:#000!important}
+  .receipt th:first-child,.receipt td:first-child{width:62%!important;text-align:left!important}
+  .receipt th:last-child,.receipt td:last-child{width:38%!important;text-align:right!important;white-space:nowrap!important}
+  .receipt-total{font-size:13px!important;font-weight:800!important;margin-top:7px!important;padding-top:5px!important;border-top:1px dashed #555!important}
+  .receipt-footer{font-size:8px!important;color:#000!important;margin-top:9px!important;overflow-wrap:anywhere}
+  .upi-block{margin-top:8px!important;padding-top:6px!important}
+  .upi-block .qr-title{font-size:9px!important}
+  .upi-block .qr-holder{width:28mm!important;height:28mm!important;margin:4px auto!important;padding:1mm!important}
+  .upi-block .qr-holder canvas,.upi-block .qr-holder img{width:26mm!important;height:26mm!important}
+  .upi-block .upi-id{font-size:7px!important}
+  .upi-block .qr-note{font-size:7px!important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand"><div class="logo">Q</div>QuickBill</div>
+  <div class="header-actions"><button class="icon-btn" id="historyTop" aria-label="Bill history">▤</button><button class="icon-btn" id="settingsTop" aria-label="Settings">⚙</button></div>
+</header>
+<main>
+  <section id="billingScreen" class="screen active">
+    <div class="topline"><div><div class="eyebrow">New bill</div><div class="small-muted" id="todayLabel"></div></div><button class="danger-link" id="newBillBtn">＋ New</button></div>
+    <div class="total-card"><div class="total-label">CURRENT TOTAL</div><div class="total-value" id="totalValue">₹0.00</div><div class="total-foot" id="itemCount">0 items added</div></div>
+    <label class="customer-entry"><span>Customer name <small class="small-muted" style="font-weight:500">(optional)</small></span><input id="customerNameInput" type="text" value="Walk-in Customer" placeholder="Walk-in Customer" autocomplete="off"></label>
+    <div class="panel">
+      <div class="panel-head"><h2>Enter amount</h2><span class="small-muted">Tap numbers below</span></div>
+      <div class="amount-box"><span class="currency">₹</span><input class="amount-input" id="amountInput" type="text" inputmode="none" autocomplete="off" autocapitalize="off" spellcheck="false" readonly tabindex="-1" aria-readonly="true" placeholder="0" aria-label="Amount"></div>
+      <div class="keypad" id="keypad">
+        <button class="key" data-key="1">1</button><button class="key" data-key="2">2</button><button class="key" data-key="3">3</button>
+        <button class="key" data-key="4">4</button><button class="key" data-key="5">5</button><button class="key" data-key="6">6</button>
+        <button class="key" data-key="7">7</button><button class="key" data-key="8">8</button><button class="key" data-key="9">9</button>
+        <button class="key utility" data-key="back">⌫</button><button class="key" data-key="0">0</button><button class="key utility" data-key=".">.</button>
+      </div>
+      <button class="add-btn" id="addBtn">＋ &nbsp; ADD ITEM</button>
+    </div>
+    <div class="panel items-panel">
+      <div class="panel-head"><h2>Items in this bill</h2><span class="small-muted" id="listCount">0 items</span></div>
+      <div class="item-list" id="itemList"><div class="empty">Your items will appear here.<br>Enter an amount and tap Add Item.</div></div>
+    </div>
+    <button class="primary-btn" id="generateBtn" disabled style="opacity:.45">GENERATE BILL &nbsp; →</button>
+    <div style="display:flex;justify-content:center"><button class="danger-link" id="clearBtn">Clear current bill</button></div>
+  </section>
+  <section id="historyScreen" class="screen">
+    <div class="topline"><div><div class="eyebrow">Your records</div><div class="small-muted">Saved bills on this device</div></div><button class="secondary-btn" id="backBilling">＋ New bill</button></div>
+    <input class="history-search" id="historySearch" placeholder="Search bill number or customer…" aria-label="Search bills">
+    <div id="historyList"></div>
+    <p class="note">Your bills are stored on this device. Export a backup regularly to protect your records.</p>
+    <button class="secondary-btn" id="exportBtn" style="width:100%">Export bill history backup</button>
+    <button class="secondary-btn" id="importBtn" style="width:100%;margin-top:8px">Import previous bill backup</button><input id="importFile" type="file" accept="application/json,.json" class="hidden">
+  </section>
+  <section id="settingsScreen" class="screen">
+    <div class="topline"><div><div class="eyebrow">Preferences</div><div class="small-muted">Set these once for your shop</div></div><button class="secondary-btn" id="backBilling2">Done</button></div>
+    <div class="panel">
+      <label class="settings-field"><span>Shop name</span><input id="shopName" placeholder="Your shop name"></label>
+      <label class="settings-field"><span>Phone number</span><input id="shopPhone" inputmode="tel" placeholder="Optional"></label>
+      <label class="settings-field"><span>Shop address</span><input id="shopAddress" placeholder="Optional"></label>
+      <label class="settings-field"><span>Receipt footer</span><input id="shopFooter" placeholder="Thank you for your business!"></label>
+      <button class="primary-btn" id="saveSettings">SAVE SETTINGS</button>
+    </div>
+    <p class="note">QuickBill works offline after it has been opened once while connected. Bills remain on this device unless you export a backup.</p>
+  </section>
+  <div class="nav"><button id="navBill" class="active">＋ Billing</button><button id="navHistory">▤ History</button><button id="navSettings">⚙ Settings</button></div>
+</main>
+</div>
+<div class="modal" id="billModal" role="dialog" aria-modal="true" aria-label="Bill preview">
+  <div class="sheet">
+    <div class="sheet-head"><h2>Bill preview</h2><button class="close" id="closeModal" aria-label="Close">×</button></div>
+    <div class="receipt" id="receipt"></div>
+    <div class="modal-actions">
+      <button class="secondary-btn" id="printBtn">50mm Print / PDF</button>
+      <button class="primary-btn" id="shareBtn" style="margin:0">Share bill</button>
+    </div>
+    <button class="primary-btn" id="saveBillBtn">SAVE BILL</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+let items=[], editingId=null, history=[], settings={shopName:"BRIGHT WAYS",shopPhone:"",shopAddress:"SATWARI JAMMU",shopFooter:"Thank you for your business!"}, currentBill=null, savedCurrent=false;
+const money=paise=>"₹"+(paise/100).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});
+const toPaise=value=>Math.round(Number(value)*100);
+const today=()=>new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});
+const dateTime=()=>new Date().toISOString();
+function toast(msg){const el=$("toast");el.textContent=msg;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),2200)}
+function total(){return items.reduce((s,x)=>s+x.amount,0)}
+function showScreen(name){["billing","history","settings"].forEach(n=>{$(n+"Screen").classList.toggle("active",n===name);$("nav"+n[0].toUpperCase()+n.slice(1)).classList.toggle("active",n===name)});if(name==="history")renderHistory()}
+function saveDraft(){try{localStorage.setItem("qb_draft",JSON.stringify(items))}catch(e){}}
+function render(){
+ $("totalValue").textContent=money(total());$("itemCount").textContent=items.length+" item"+(items.length===1?"":"s")+" added";$("listCount").textContent=items.length+" items";
+ $("generateBtn").disabled=!items.length;$("generateBtn").style.opacity=items.length?1:.45;
+ if(!items.length){$("itemList").innerHTML='<div class="empty">Your items will appear here.<br>Enter an amount and tap Add Item.</div>'}
+ else {$("itemList").innerHTML=items.map((it,i)=>`<div class="item-row"><div class="item-num">${i+1}</div><div class="item-name">Item ${i+1}</div><div class="item-amount">${money(it.amount)}</div><div class="item-actions"><button class="mini" data-edit="${it.id}" aria-label="Edit item ${i+1}">✎</button><button class="mini" data-delete="${it.id}" aria-label="Delete item ${i+1}">×</button></div></div>`).join("")}
+ saveDraft();
+}
+function addItem(){let raw=$("amountInput").value.trim();if(!raw){toast("Please enter an amount");return}if(!/^\d+(\.\d{0,2})?$/.test(raw)||Number(raw)<=0){toast("Enter a valid amount (up to 2 decimals)");return}
+ const amount=toPaise(raw);if(editingId){items=items.map(x=>x.id===editingId?{...x,amount}:x);editingId=null;$("addBtn").innerHTML="＋ &nbsp; ADD ITEM"}else items.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),amount});
+ $("amountInput").value="";render();
+}
+$("keypad").addEventListener("click",e=>{const b=e.target.closest("button[data-key]");if(!b)return;let v=$("amountInput").value,k=b.dataset.key;if(k==="back")v=v.slice(0,-1);else if(k==="." ){if(!v.includes("."))v=v?v+".":"0."}else{if(v.includes(".")&&v.split(".")[1].length>=2)return;v+=k} $("amountInput").value=v});
+$("amountInput").addEventListener("focus",e=>{e.target.blur()});
+$("amountInput").addEventListener("input",e=>{let v=e.target.value.replace(/[^0-9.]/g,"");let p=v.split(".");if(p.length>2)v=p[0]+"."+p.slice(1).join("");if(p[1]?.length>2)v=p[0]+"."+p[1].slice(0,2);e.target.value=v});
+$("amountInput").addEventListener("keydown",e=>{if(e.key==="Enter")addItem()});$("addBtn").onclick=addItem;
+$("itemList").addEventListener("click",e=>{let edit=e.target.closest("[data-edit]"),del=e.target.closest("[data-delete]");if(edit){let it=items.find(x=>x.id===edit.dataset.edit);editingId=it.id;$("amountInput").value=(it.amount/100).toFixed(2);$("addBtn").textContent="✓ UPDATE ITEM"}if(del){items=items.filter(x=>x.id!==del.dataset.delete);render();toast("Item removed")}});
+$("clearBtn").onclick=()=>{if(!items.length){toast("Nothing to clear");return}if(confirm("Clear all items in this bill?")){items=[];editingId=null;$("amountInput").value="";$("addBtn").innerHTML="＋ &nbsp; ADD ITEM";render()}};
+$("newBillBtn").onclick=()=>{if(items.length&&!confirm("Start a new bill? Current unsaved items will be cleared."))return;items=[];editingId=null;$("amountInput").value="";$("customerNameInput").value="Walk-in Customer";render();window.scrollTo({top:0,behavior:"smooth"})};
+$("todayLabel").textContent=today();
+function makeBill(){const last=history.reduce((m,b)=>Math.max(m,Number(String(b.billNumber||"").replace(/^QB-/,""))||0),0);const num="QB-"+String(last+1).padStart(4,"0");return {id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),billNumber:num,createdAt:dateTime(),items:items.map((x,i)=>({itemNumber:i+1,amount:x.amount})),total:total(),customerName:($("customerNameInput").value.trim()||"Walk-in Customer"),shop:{...settings}}}
+function receiptHtml(b){let shop=b.shop||settings;return `<div class="receipt-center"><h2>${escapeHtml(shop.shopName||"QUICK BILL")}</h2>${shop.shopAddress?`<p>${escapeHtml(shop.shopAddress)}</p>`:""}${shop.shopPhone?`<p>Phone: ${escapeHtml(shop.shopPhone)}</p>`:""}<p>PAYMENT RECEIPT</p></div><div class="receipt-meta"><span>Bill: <b>${b.billNumber}</b></span><span>${new Date(b.createdAt).toLocaleString("en-IN")}</span></div><div style="font-size:12px;margin-bottom:9px">Customer: ${escapeHtml(b.customerName||"Walk-in Customer")}</div><table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody>${b.items.map(x=>`<tr><td>Item ${x.itemNumber}</td><td>${money(x.amount)}</td></tr>`).join("")}</tbody></table><div style="display:flex;justify-content:space-between;font-size:12px;margin-top:12px"><span>Total items</span><b>${b.items.length}</b></div><div class="receipt-total"><span>Grand Total</span><span>${money(b.total)}</span></div><div class="upi-block"><div class="qr-title">SCAN TO PAY ${money(b.total)}</div><div class="qr-holder" id="receiptQr"></div><div class="upi-id">UPI: paytm.s2daltl@pty</div><div class="qr-note">Verify the amount and recipient in your UPI app before paying</div></div><div class="receipt-footer">${escapeHtml(shop.shopFooter||"Thank you for your business!")}</div>`}
+function renderReceipt(b){$("receipt").innerHTML=receiptHtml(b);const holder=$("receiptQr");if(holder){holder.innerHTML="";const upi="upi://pay?"+new URLSearchParams({pa:"paytm.s2daltl@pty",pn:"BRIGHT WAYS",am:(b.total/100).toFixed(2),cu:"INR",tn:"Bill "+b.billNumber}).toString();if(window.QRCode){new QRCode(holder,{text:upi,width:236,height:236,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});}else{holder.textContent="QR unavailable — connect to internet and reopen bill";}}}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+$("generateBtn").onclick=()=>{if(!items.length)return;currentBill=makeBill();if(!history.some(x=>x.id===currentBill.id)){history.unshift(currentBill);if(!saveHistory()){history.shift();return}}renderReceipt(currentBill);$("saveBillBtn").classList.add("hidden");$("billModal").classList.add("show");toast("Bill saved. Opening print preview…");requestAnimationFrame(()=>requestAnimationFrame(()=>window.print()))};
+window.addEventListener("afterprint",()=>{$("billModal").classList.remove("show")});
+$("closeModal").onclick=()=>{$("billModal").classList.remove("show");$("saveBillBtn").classList.remove("hidden");$("saveBillBtn").textContent="DONE — BILL SAVED"};
+$("billModal").addEventListener("click",e=>{if(e.target===$("billModal")){$("billModal").classList.remove("show");$("saveBillBtn").classList.remove("hidden");$("saveBillBtn").textContent="DONE — BILL SAVED"}});
+$("printBtn").onclick=()=>window.print();
+function shareText(b){return `${b.shop?.shopName||"QUICK BILL"}\nBill: ${b.billNumber}\nDate: ${new Date(b.createdAt).toLocaleString("en-IN")}\nCustomer: ${b.customerName||"Walk-in Customer"}\n${b.items.map(x=>`Item ${x.itemNumber} - ${money(x.amount)}`).join("\n")}\nTotal: ${money(b.total)}\n${b.shop?.shopFooter||"Thank you!"}`}
+$("shareBtn").onclick=async()=>{let b=currentBill;if(!b)return;let text=shareText(b);if(navigator.share){try{await navigator.share({title:"Bill "+b.billNumber,text});return}catch(e){if(e.name==="AbortError")return}}window.open("https://wa.me/?text="+encodeURIComponent(text),"_blank","noopener");};
+async function loadData(){try{let storedHistory=[];try{storedHistory=JSON.parse(localStorage.getItem("qb_history")||"null")}catch(e){}if(!Array.isArray(storedHistory)||storedHistory.length===0){try{const backupHistory=JSON.parse(localStorage.getItem("qb_history_backup")||"[]");if(Array.isArray(backupHistory)&&backupHistory.length)storedHistory=backupHistory}catch(e){}}history=Array.isArray(storedHistory)?storedHistory.filter(b=>b&&b.id&&Array.isArray(b.items)):[];const storedSettings=JSON.parse(localStorage.getItem("qb_settings")||"{}");settings={...settings,...(storedSettings&&typeof storedSettings==="object"?storedSettings:{})};const draft=JSON.parse(localStorage.getItem("qb_draft")||"[]");items=Array.isArray(draft)?draft:[]}catch(e){console.error("QuickBill data load failed",e);history=[];items=[]}}
+function saveHistory(){try{const payload=JSON.stringify(history);localStorage.setItem("qb_history_backup",payload);localStorage.setItem("qb_history",payload);const check=JSON.parse(localStorage.getItem("qb_history")||"null");if(!Array.isArray(check)||check.length!==history.length)throw new Error("History verification failed");return true}catch(e){console.error("QuickBill history save failed",e);toast("Could not save bill. Please check phone storage or export a backup.");return false}}
+$("saveBillBtn").onclick=()=>{if(!currentBill)return;items=[];editingId=null;$("amountInput").value="";$("customerNameInput").value="Walk-in Customer";$("addBtn").innerHTML="＋ &nbsp; ADD ITEM";render();$("billModal").classList.remove("show");$("saveBillBtn").classList.remove("hidden");toast("Bill is already saved in history");showScreen("billing")};
+function localDayKey(value){const d=new Date(value);if(Number.isNaN(d.getTime()))return "unknown";return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function dayHeading(key){if(key==="unknown")return "Date unavailable";const now=new Date(),today=localDayKey(now),y=new Date(now);y.setDate(y.getDate()-1);const yesterday=localDayKey(y);if(key===today)return "TODAY";if(key===yesterday)return "YESTERDAY";const [yy,mm,dd]=key.split("-").map(Number);return new Date(yy,mm-1,dd).toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}
+function renderHistory(){try{let latest=JSON.parse(localStorage.getItem("qb_history")||"[]");if(!Array.isArray(latest)||latest.length===0){const backup=JSON.parse(localStorage.getItem("qb_history_backup")||"[]");if(Array.isArray(backup)&&backup.length)latest=backup}if(Array.isArray(latest))history=latest.filter(b=>b&&b.id&&Array.isArray(b.items))}catch(e){console.warn("Could not refresh saved history",e)}let q=$("historySearch").value.toLowerCase();let rows=history.filter(b=>(b.billNumber+" "+(b.customerName||"")).toLowerCase().includes(q)).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));if(!rows.length){$("historyList").innerHTML='<div class="empty">No saved bills yet.</div>';return}const groups=new Map();rows.forEach(b=>{const key=localDayKey(b.createdAt);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(b)});let html="";for(const [day,bills] of groups){const dayTotal=bills.reduce((sum,b)=>sum+Number(b.total||0),0);html+=`<div class="history-day"><div class="history-day-head"><span>${dayHeading(day)}</span><span>${bills.length} bill${bills.length===1?"":"s"} · ${money(dayTotal)}</span></div>${bills.map(b=>`<div class="history-card"><div class="history-info"><div class="history-title">${escapeHtml(b.billNumber)} · ${escapeHtml(b.customerName||"Walk-in Customer")}</div><div class="history-meta">${new Date(b.createdAt).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})} · ${b.items.length} items</div></div><div class="history-total">${money(b.total)}</div><button class="mini" data-view="${escapeHtml(b.id)}" aria-label="View bill">›</button></div>`).join("")}</div>`}$("historyList").innerHTML=html}
+$("historyList").addEventListener("click",e=>{let b=e.target.closest("[data-view]");if(!b)return;currentBill=history.find(x=>x.id===b.dataset.view);if(!currentBill)return;renderReceipt(currentBill);$("billModal").classList.add("show");$("saveBillBtn").classList.add("hidden")});
+$("historySearch").oninput=renderHistory;
+$("exportBtn").onclick=()=>{let blob=new Blob([JSON.stringify({history,settings,exportedAt:dateTime()},null,2)],{type:"application/json"});let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="quickbill-backup.json";a.click();URL.revokeObjectURL(a.href);toast("Backup exported")};
+$("importBtn").onclick=()=>$("importFile").click();$("importFile").onchange=async e=>{const file=e.target.files?.[0];if(!file)return;try{const data=JSON.parse(await file.text());if(!data||!Array.isArray(data.history))throw new Error("Invalid backup");const byId=new Map(history.map(b=>[b.id,b]));data.history.forEach(b=>{if(b&&b.id&&Array.isArray(b.items))byId.set(b.id,b)});history=Array.from(byId.values()).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));if(data.settings&&typeof data.settings==="object")settings={...settings,...data.settings};if(!saveHistory())throw new Error("Storage write failed");localStorage.setItem("qb_settings",JSON.stringify(settings));renderHistory();toast("Backup imported successfully")}catch(err){console.error(err);toast("Could not import this backup file") }e.target.value=""};
+function openSettings(){ $("shopName").value=settings.shopName||"";$("shopPhone").value=settings.shopPhone||"";$("shopAddress").value=settings.shopAddress||"";$("shopFooter").value=settings.shopFooter||"";showScreen("settings")}
+$("saveSettings").onclick=()=>{settings={shopName:$("shopName").value.trim(),shopPhone:$("shopPhone").value.trim(),shopAddress:$("shopAddress").value.trim(),shopFooter:$("shopFooter").value.trim()||"Thank you for your business!"};try{localStorage.setItem("qb_settings",JSON.stringify(settings));toast("Settings saved");showScreen("billing")}catch(e){toast("Could not save settings")}};
+$("navBill").onclick=()=>showScreen("billing");$("navHistory").onclick=()=>showScreen("history");$("navSettings").onclick=openSettings;$("historyTop").onclick=()=>showScreen("history");$("settingsTop").onclick=openSettings;$("backBilling").onclick=()=>showScreen("billing");$("backBilling2").onclick=()=>showScreen("billing");
+$("saveBillBtn").classList.remove("hidden");
+loadData().then(()=>{render();if("serviceWorker" in navigator && location.protocol!=="file:")navigator.serviceWorker.register("./sw.js").catch(()=>{});});
+</script>
+</body></html>

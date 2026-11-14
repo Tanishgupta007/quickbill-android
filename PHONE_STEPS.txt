@@ -1,0 +1,29 @@
+QUICKBILL APK BUILD — PHONE STEPS
+
+This ZIP is Android source code, not an APK. The APK is built by GitHub in the cloud.
+
+A. Extract the ZIP
+1. Download and extract this ZIP using your Android Files app.
+2. Open the extracted folder quickbill_android_complete.
+
+B. Upload to GitHub
+1. In Chrome, open https://github.com and sign in.
+2. Tap + > New repository. Name it quickbill-android, choose Private, then Create repository.
+3. In the new repository choose Add file > Upload files.
+4. Upload the project contents (not the outer folder). Include package.json, capacitor.config.json, README.md, the entire www folder, and especially .github/workflows/build-apk.yml.
+5. If the phone file picker hides .github, enable Show hidden files. The workflow file must end up at .github/workflows/build-apk.yml in the repository.
+6. Tap Commit changes.
+
+C. Build the APK
+1. In the repository, open Actions. If GitHub asks, enable workflows.
+2. Select Build QuickBill Android APK.
+3. Tap Run workflow > Run workflow.
+4. Wait for a green check mark. If it fails, open the run and share a screenshot of the error.
+5. Open the successful run and scroll to Artifacts. Download QuickBill-Android-APK.
+6. Extract the downloaded artifact ZIP. It contains app-debug.apk. Tap it to install. If Android asks, allow your Files app to install unknown apps.
+
+IMPORTANT
+- Do not uninstall any previous app if you need its data.
+- Bills from the old file:// version do not automatically migrate. Export a backup from the old app if possible, then import it into the new app.
+- Keep backups: clearing app data or uninstalling can erase local bills.
+- RawBT must be installed and configured with the Shreyans printer. Test with a small bill first.
